@@ -1,0 +1,17 @@
+logs
+*.log
+npm-debug.log*
+pids
+*.pid
+*.seed
+*.pid.lock
+lib-cov
+coverage
+.nyc_output
+.lock-wscript
+node_modules/
+.npm
+.eslintcache
+.node_repl_history
+.env
+.vscode

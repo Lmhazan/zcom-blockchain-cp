@@ -16,12 +16,8 @@ const testTokenFile = path.join(__dirname, '.test-token');
 function deleteFilesInDir(delPath) {
     return fs.readdirAsync(delPath)
         .then(files => {
-            let processes = [];
-            for (const f of files) {
-                processes.push(fs.unlinkAsync(path.join(outputPath, f)));
-            }
-
-            return Promise.all[processes];
+            const processes = files.map(f => fs.unlinkAsync(path.join(outputPath, f)));
+            return Promise.all(processes);
         });
 }
 
@@ -130,7 +126,7 @@ describe('programming-interface', () => {
         it('should create the output file if save file is true', () => {
             return zcbc.addContract(dummyAddress, dummyAbi, dummyGasLim, true, 'AddContract')
                 .then(() => {
-                    let contractFile = path.join(outputPath, 'zcom-addcontract.js');
+                    const contractFile = path.join(outputPath, 'zcom-addcontract.js');
                     fs.existsSync(contractFile).should.equal(true);
                 });
         });
@@ -138,7 +134,7 @@ describe('programming-interface', () => {
         it('should not create the file when there is no file name provided', () => {
             return zcbc.addContract(dummyAddress, dummyAbi, dummyGasLim, true)
                 .then(() => {
-                    let contractFile = path.join(outputPath, 'zcom-addcontract.js');
+                    const contractFile = path.join(outputPath, 'zcom-addcontract.js');
                     fs.existsSync(contractFile).should.equal(false);
                 });
         });
@@ -202,7 +198,7 @@ describe('programming-interface', () => {
         it('should create the output file if save file is true', () => {
             return zcbc.updateContract(dummyAddress, dummyAbi, dummyGasLim, true, 'UpdateContract')
                 .then(() => {
-                    let contractFile = path.join(outputPath, 'zcom-updatecontract.js');
+                    const contractFile = path.join(outputPath, 'zcom-updatecontract.js');
                     fs.existsSync(contractFile).should.equal(true);
                 });
         });
@@ -210,7 +206,7 @@ describe('programming-interface', () => {
         it('should not create the file when there is no file name provided', () => {
             return zcbc.updateContract(dummyAddress, dummyAbi, dummyGasLim, true)
                 .then(() => {
-                    let contractFile = path.join(outputPath, 'zcom-updatecontract.js');
+                    const contractFile = path.join(outputPath, 'zcom-updatecontract.js');
                     fs.existsSync(contractFile).should.equal(false);
                 });
         });
@@ -286,6 +282,46 @@ describe('programming-interface', () => {
                 .catch(res => {
                     return res.should.be.rejected;
                 });
+        });
+    });
+
+    describe('compile-js-output-files', () => {
+        const dummyOutput = path.join(__dirname, 'dummy-output');
+
+        beforeEach(() => {
+            return fs.readdirAsync(dummyOutput)
+                .then(files => {
+                    const processes = files.map(f => fs.copyFileAsync(path.join(dummyOutput, f), path.join(outputPath, f)));
+                    return Promise.all(processes);
+                });
+        });
+
+        afterEach(() => {
+            return deleteFilesInDir(outputPath);
+        });
+
+        it('should create a file with all the necessary content', () => {
+            return zcbc.compileOutputFiles().then(() => {
+                const compiledFile = path.join(outputPath, 'zcom-vars-compiled.js');
+                fs.existsSync(compiledFile).should.equal(true);
+            });
+        });
+
+        it('should delete all input files when deleteInputs is true', () => {
+            return zcbc.compileOutputFiles(true).then(() => {
+                const compiledFile = path.join(outputPath, 'zcom-vars-compiled.js');
+                fs.existsSync(compiledFile).should.equal(true);
+                const outputFiles = fs.readdirSync(outputPath);
+                outputFiles.length.should.equal(1);
+            });
+        });
+
+        it('should save file with specific name if defined', () => {
+            const customName = 'linh-dep-trai.js';
+            return zcbc.compileOutputFiles(false, customName).then(() => {
+                const compiledFile = path.join(outputPath, customName);
+                fs.existsSync(compiledFile).should.equal(true);
+            });
         });
     });
 });

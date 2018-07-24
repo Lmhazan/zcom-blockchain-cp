@@ -44,6 +44,7 @@ This library is to use in conjunction with [Truffle](https://truffleframework.co
         ProxyControllerLogic_v1 = artifacts.require('./ProxyControllerLogic_v1.sol');
     const zcbc = require('zcom-blockchain-cp');
 
+
     module.exports = function(deployer) {
         deployer.deploy(ProxyControllerLogic_v1, ContractNameService.address).then(function() {
             return deployer.deploy(ProxyController, ContractNameService.address, ProxyControllerLogic_v1.address);
@@ -76,4 +77,3 @@ This library is to use in conjunction with [Truffle](https://truffleframework.co
     const zcbc = require('zcom-blockchain-cp');
     zcbc.provideEther('<address>', 10)
     ```
-

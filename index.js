@@ -2,6 +2,7 @@ const Promise = require('bluebird');
 const fs = Promise.promisifyAll(require('fs'));
 const readFileSync = require('fs').readFileSync;
 const path = require('path');
+const nj = require('nunjucks');
 const ZcomApiClient = require('./lib/zcom-api');
 
 const defaultConfDir = path.join(__dirname, '../../');
@@ -12,6 +13,9 @@ let cnsFilePath = path.join(outputDir, 'zcom-cns.js');
 let authToken = process.env.ZCOM_AUTH_TOKEN;
 const apiRoot = process.env.ZCOM_API_URL || 'https://cp.blockchain.z.com/api/v1';
 const apiClient = new ZcomApiClient(apiRoot);
+
+// Nunjuck settings
+nj.configure({ autoescape: true });
 
 // Read token from default secret file if there is no env variable defined
 if (!authToken) {
@@ -28,7 +32,7 @@ if (!authToken) {
  * @returns {Promise}
  */
 function saveCNSToFile(address) {
-    const fileContent = `const CNS_ADDRESS = '${address}';`;
+    const fileContent = `const CNS_ADDRESS = "${address}";`;
     return fs.writeFileAsync(cnsFilePath, fileContent)
         .then(() => console.info(`CNS address variable was saved in ${cnsFilePath}`))
         .catch(err => console.error(err));
@@ -169,6 +173,47 @@ module.exports = {
         return fs.writeFileAsync(filePath, fileContent)
             .then(() => console.info(`Contract address and abi variable was saved in ${filePath}`))
             .catch(err => console.error(err));
-    }
+    },
+    /**
+     * Read the contents of created js files that hold contract infos and save all of them in a compile js files
+     * that can be import in both browser and nodejs
+     * @param {boolean} deleteInputs delete all inputs js files that holde cns, contract variables or not
+     */
+    compileOutputFiles(deleteInputs = false, outputFileName = 'zcom-vars-compiled.js') {
+        let zFiles;
+        const compiledFilePath = path.join(outputDir, outputFileName);
+        const templateStr = `
+(function(exports) {
+{%- for item in items %}
+    {{ item | safe }}
+{% endfor -%}
+}(typeof exports === 'undefined' ? window : exports));
+`;
+        // Read file contents, get the variables and put it in a final files
+        return fs.readdirAsync(outputDir)
+            .then(files => {
+                // Get file contents
+                zFiles = files.filter(el => el.match(/^zcom-\w+\.js$/ig));
+                const processes = zFiles.map(f => fs.readFileAsync(path.join(outputDir, f), 'utf8'));
+                return Promise.all(processes);
+            })
+            .then(contents => {
+                // Change variables definition so it can be used anywhere
+                const allData = contents.reduce((acc, el) => acc.concat(el.split('\n')), []);
+                const augmentedData = allData.map(el => `exports.${el.slice(6)}`);
+                const tpl = nj.compile(templateStr);
+                return fs.writeFileAsync(compiledFilePath, tpl.render({ items: augmentedData }));
+            })
+            .then(() => {
+                console.info(`All cns and contract addresses and abi variables was saved in ${compiledFilePath}`);
+                if (deleteInputs) {
+                    console.warn(`All input files will be deleted!`);
+                    const processes = zFiles.map(f => fs.unlinkAsync(path.join(outputDir, f)));
+                    return Promise.all(processes);
+                }
 
+                return Promise.resolve();
+            })
+            .catch(err => console.error(err));
+    }
 };

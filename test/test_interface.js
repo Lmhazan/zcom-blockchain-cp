@@ -34,6 +34,51 @@ describe('programming-interface', () => {
         zcbc.setOutputPath(outputPath);
     });
 
+    describe('confirm-token', () => {
+        const dummyRes = { status: 0, message: 'Dummy successful response' };
+        let mockReq;
+        beforeEach(() => {
+            mockReq = nock(apiRoot)
+                .post('/check-token', {authToken: authToken })
+                .reply(200, dummyRes);
+        });
+
+        after(() => {
+            nock.cleanAll();
+        });
+
+        it('should return a fullfilled promise', () => {
+            const res = zcbc.confirmToken();
+            return res.should.be.fulfilled;
+        });
+
+        it('should call the api', () => {
+            return zcbc.confirmToken().then(() => mockReq.done());
+        });
+
+    });
+
+    describe('confirm-token-fail', () => {
+        const dummyRes = { status: 1, message: 'Dummy failed response' };
+
+        beforeEach(() => {
+            nock(apiRoot)
+                .post('/check-token', { authToken: authToken })
+                .reply(200, dummyRes);
+        });
+
+        after(() => {
+            nock.cleanAll();
+        });
+
+        it('should return a rejected promise', () => {
+            return zcbc.confirmToken()
+                .catch(res => {
+                    return res.should.be.rejected;
+                });
+        });
+    });
+
     describe('register-new-cns', () => {
         const dummyAddress = '0x123f681646d4a755815f9cb19e1acc8565a0c2ac';
         const dummyRes = { status: 0, message: 'Dummy successful response' };

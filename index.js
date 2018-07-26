@@ -56,6 +56,23 @@ module.exports = {
         cnsFilePath = path.join(outputDir, 'zcom-cns.js');
     },
     /**
+    * confirm Token is valid?
+    * @returns {Promise}
+    */
+    confirmToken() {
+        return apiClient.confirmToken(authToken)
+            .then(resObj => {
+                if (resObj.status === 0) {
+                    console.info(resObj.message + ' : ' + authToken);
+                    return Promise.resolve(resObj);
+                }
+            })
+            .catch(err => {
+                console.error(`ERROR : ${err.message}`);
+                process.exit();
+            });
+    },
+    /**
      * Register CNS address
      * @param {string} address CNS Ethereum's addresss
      * @param {boolean} saveFile Save address to variable in a js file or not

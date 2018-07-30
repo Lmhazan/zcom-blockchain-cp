@@ -39,7 +39,7 @@ describe('programming-interface', () => {
         let mockReq;
         beforeEach(() => {
             mockReq = nock(apiRoot)
-                .post('/check-token', {authToken: authToken })
+                .post('/check-token', { authToken: authToken })
                 .reply(200, dummyRes);
         });
 
@@ -55,7 +55,6 @@ describe('programming-interface', () => {
         it('should call the api', () => {
             return zcbc.confirmToken().then(() => mockReq.done());
         });
-
     });
 
     describe('confirm-token-fail', () => {
@@ -74,7 +73,7 @@ describe('programming-interface', () => {
         it('should return a rejected promise', () => {
             return zcbc.confirmToken()
                 .catch(res => {
-                    return res.should.be.rejected;
+                    return res.should.be.instanceOf(Error);
                 });
         });
     });
@@ -132,7 +131,7 @@ describe('programming-interface', () => {
         it('should return a rejected promise', () => {
             return zcbc.registerCNS(dummyAddress)
                 .catch(res => {
-                    return res.should.be.rejected;
+                    return res.should.be.instanceOf(Error);
                 });
         });
     });
@@ -204,7 +203,7 @@ describe('programming-interface', () => {
         it('should return a rejected promise', () => {
             return zcbc.addContract(dummyAddress, dummyAbi, dummyGasLim)
                 .catch(res => {
-                    return res.should.be.rejected;
+                    return res.should.be.instanceOf(Error);
                 });
         });
     });
@@ -276,7 +275,7 @@ describe('programming-interface', () => {
         it('should return a rejected promise', () => {
             return zcbc.updateContract(dummyAddress, dummyAbi, dummyGasLim)
                 .catch(res => {
-                    return res.should.be.rejected;
+                    return res.should.be.instanceOf(Error);
                 });
         });
     });
@@ -325,7 +324,7 @@ describe('programming-interface', () => {
         it('should return a rejected promise', () => {
             return zcbc.provideEther(dummyAddress, dummyAmount)
                 .catch(res => {
-                    return res.should.be.rejected;
+                    return res.should.be.instanceOf(Error);
                 });
         });
     });

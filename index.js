@@ -89,9 +89,6 @@ module.exports = {
                 } else {
                     return Promise.reject(new Error(resObj.message));
                 }
-            })
-            .catch(err => {
-                console.error(err);
             });
     },
     /**
@@ -149,9 +146,6 @@ module.exports = {
                 } else {
                     return Promise.reject(new Error(resObj.message));
                 }
-            })
-            .catch(err => {
-                console.error(err);
             });
     },
     /**
@@ -168,9 +162,6 @@ module.exports = {
                 } else {
                     return Promise.reject(new Error(resObj.message));
                 }
-            })
-            .catch(err => {
-                console.error(err);
             });
     },
     /**
@@ -188,8 +179,7 @@ module.exports = {
         const filePath = path.join(outputDir, fileName);
 
         return fs.writeFileAsync(filePath, fileContent)
-            .then(() => console.info(`Contract address and abi variable was saved in ${filePath}`))
-            .catch(err => console.error(err));
+            .then(() => console.info(`Contract address and abi variable was saved in ${filePath}`));
     },
     /**
      * Read the contents of created js files that hold contract infos and save all of them in a compile js files
@@ -230,7 +220,6 @@ module.exports = {
                 }
 
                 return Promise.resolve();
-            })
-            .catch(err => console.error(err));
+            });
     }
 };

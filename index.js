@@ -34,8 +34,7 @@ if (!authToken) {
 function saveCNSToFile(address) {
     const fileContent = `const CNS_ADDRESS = "${address}";`;
     return fs.writeFileAsync(cnsFilePath, fileContent)
-        .then(() => console.info(`CNS address variable was saved in ${cnsFilePath}`))
-        .catch(err => console.error(err));
+        .then(() => console.info(`CNS address variable was saved in ${cnsFilePath}`));
 }
 
 module.exports = {
@@ -56,21 +55,29 @@ module.exports = {
         cnsFilePath = path.join(outputDir, 'zcom-cns.js');
     },
     /**
-    * confirm Token is valid?
+    * Confirm Token is valid or not
+    * @param {boolean} isForceExist Should the script be existed when there is an invalid token or not
     * @returns {Promise}
     */
-    confirmToken() {
-        return apiClient.confirmToken(authToken)
+    confirmToken(isForceExist = true) {
+        let resPromise = apiClient.confirmToken(authToken)
             .then(resObj => {
                 if (resObj.status === 0) {
-                    console.info(resObj.message + ' : ' + authToken);
+                    console.info('Confirm token successfully! Ready to use the library');
                     return Promise.resolve(resObj);
+                } else {
+                    return Promise.reject(new Error(resObj.message));
                 }
-            })
-            .catch(err => {
-                console.error(`ERROR : ${err.message}`);
-                process.exit();
             });
+
+        if (isForceExist) {
+            resPromise = resPromise.catch(err => {
+                console.error(`ERROR: ${err.message}`);
+                process.exit(1);
+            });
+        }
+
+        return resPromise;
     },
     /**
      * Register CNS address
@@ -116,9 +123,6 @@ module.exports = {
                 } else {
                     return Promise.reject(new Error(resObj.message));
                 }
-            })
-            .catch(err => {
-                console.error(err);
             });
     },
     /**

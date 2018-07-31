@@ -19,6 +19,34 @@ describe('api-interface', () => {
         zcbc.setSecretFile(testTokenFile);
     });
 
+    describe('confirm-token', () => {
+        const dummyRes = { status: 0, message: 'Dummy successful response' };
+        beforeEach(() => {
+            nock(apiRoot)
+                .post('/check-token', { authToken: authToken })
+                .reply(200, dummyRes);
+        });
+
+        after(() => {
+            nock.cleanAll();
+        });
+
+        it('should call the api and return a fullfilled promise', () => {
+            const res = apiClient.confirmToken(authToken);
+            return res.should.be.fulfilled;
+        });
+
+        it('should call the api and return the response', () => {
+            const res = apiClient.confirmToken(authToken);
+            return res.should.become(dummyRes);
+        });
+
+        it('should not call the api and reject when there is invalid token', () => {
+            const res = apiClient.confirmToken('DummyToken');
+            return res.should.be.rejected;
+        });
+    });
+
     describe('register-new-cns', () => {
         const dummyAddress = '0x123f681646d4a755815f9cb19e1acc8565a0c2ac';
         const dummyRes = { status: 0, message: 'Dummy successful response' };

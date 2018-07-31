@@ -34,8 +34,7 @@ if (!authToken) {
 function saveCNSToFile(address) {
     const fileContent = `const CNS_ADDRESS = "${address}";`;
     return fs.writeFileAsync(cnsFilePath, fileContent)
-        .then(() => console.info(`CNS address variable was saved in ${cnsFilePath}`))
-        .catch(err => console.error(err));
+        .then(() => console.info(`CNS address variable was saved in ${cnsFilePath}`));
 }
 
 module.exports = {
@@ -56,6 +55,31 @@ module.exports = {
         cnsFilePath = path.join(outputDir, 'zcom-cns.js');
     },
     /**
+    * Confirm Token is valid or not
+    * @param {boolean} isForceExist Should the script be existed when there is an invalid token or not
+    * @returns {Promise}
+    */
+    confirmToken(isForceExist = true) {
+        let resPromise = apiClient.confirmToken(authToken)
+            .then(resObj => {
+                if (resObj.status === 0) {
+                    console.info('Confirm token successfully! Ready to use the library');
+                    return Promise.resolve(resObj);
+                } else {
+                    return Promise.reject(new Error(resObj.message));
+                }
+            });
+
+        if (isForceExist) {
+            resPromise = resPromise.catch(err => {
+                console.error(`ERROR: ${err.message}`);
+                process.exit(1);
+            });
+        }
+
+        return resPromise;
+    },
+    /**
      * Register CNS address
      * @param {string} address CNS Ethereum's addresss
      * @param {boolean} saveFile Save address to variable in a js file or not
@@ -72,9 +96,6 @@ module.exports = {
                 } else {
                     return Promise.reject(new Error(resObj.message));
                 }
-            })
-            .catch(err => {
-                console.error(err);
             });
     },
     /**
@@ -102,9 +123,6 @@ module.exports = {
                 } else {
                     return Promise.reject(new Error(resObj.message));
                 }
-            })
-            .catch(err => {
-                console.error(err);
             });
     },
     /**
@@ -132,9 +150,6 @@ module.exports = {
                 } else {
                     return Promise.reject(new Error(resObj.message));
                 }
-            })
-            .catch(err => {
-                console.error(err);
             });
     },
     /**
@@ -151,9 +166,6 @@ module.exports = {
                 } else {
                     return Promise.reject(new Error(resObj.message));
                 }
-            })
-            .catch(err => {
-                console.error(err);
             });
     },
     /**
@@ -171,8 +183,7 @@ module.exports = {
         const filePath = path.join(outputDir, fileName);
 
         return fs.writeFileAsync(filePath, fileContent)
-            .then(() => console.info(`Contract address and abi variable was saved in ${filePath}`))
-            .catch(err => console.error(err));
+            .then(() => console.info(`Contract address and abi variable was saved in ${filePath}`));
     },
     /**
      * Read the contents of created js files that hold contract infos and save all of them in a compile js files
@@ -213,7 +224,6 @@ module.exports = {
                 }
 
                 return Promise.resolve();
-            })
-            .catch(err => console.error(err));
+            });
     }
 };

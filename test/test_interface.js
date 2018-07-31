@@ -1,5 +1,6 @@
 
 const chai = require('chai');
+const sinon = require('sinon');
 const chaiAsPromised = require('chai-as-promised');
 const nock = require('nock');
 const zcbc = require('../index');
@@ -32,6 +33,66 @@ describe('programming-interface', () => {
 
         zcbc.setSecretFile(testTokenFile);
         zcbc.setOutputPath(outputPath);
+    });
+
+    describe('confirm-token', () => {
+        const dummyRes = { status: 0, message: 'Dummy successful response' };
+        let mockReq;
+        beforeEach(() => {
+            mockReq = nock(apiRoot)
+                .post('/check-token', { authToken: authToken })
+                .reply(200, dummyRes);
+        });
+
+        after(() => {
+            nock.cleanAll();
+        });
+
+        it('should return a fullfilled promise', () => {
+            const res = zcbc.confirmToken();
+            return res.should.be.fulfilled;
+        });
+
+        it('should call the api', () => {
+            return zcbc.confirmToken().then(() => mockReq.done());
+        });
+    });
+
+    describe('confirm-token-fail', () => {
+        const dummyRes = { status: 1, message: 'Dummy failed response' };
+
+        before(() => {
+            sinon.stub(process, 'exit');
+        });
+
+        beforeEach(() => {
+            nock(apiRoot)
+                .post('/check-token', { authToken: authToken })
+                .reply(403, dummyRes);
+        });
+
+        after(() => {
+            nock.cleanAll();
+            process.exit.restore();
+        });
+
+        it('process should be stubbed', () => {
+            process.exit.isSinonProxy.should.equal(true);
+        });
+
+        it('should return a rejected promise', () => {
+            return zcbc.confirmToken()
+                .catch(res => {
+                    return res.should.be.instanceOf(Error);
+                });
+        });
+
+        it('should call process.exit with default option', () => {
+            return zcbc.confirmToken()
+                .catch(res => {
+                    process.exit.calledWith(1).should.equal(true);
+                });
+        });
     });
 
     describe('register-new-cns', () => {
@@ -87,7 +148,7 @@ describe('programming-interface', () => {
         it('should return a rejected promise', () => {
             return zcbc.registerCNS(dummyAddress)
                 .catch(res => {
-                    return res.should.be.rejected;
+                    return res.should.be.instanceOf(Error);
                 });
         });
     });
@@ -159,7 +220,7 @@ describe('programming-interface', () => {
         it('should return a rejected promise', () => {
             return zcbc.addContract(dummyAddress, dummyAbi, dummyGasLim)
                 .catch(res => {
-                    return res.should.be.rejected;
+                    return res.should.be.instanceOf(Error);
                 });
         });
     });
@@ -231,7 +292,7 @@ describe('programming-interface', () => {
         it('should return a rejected promise', () => {
             return zcbc.updateContract(dummyAddress, dummyAbi, dummyGasLim)
                 .catch(res => {
-                    return res.should.be.rejected;
+                    return res.should.be.instanceOf(Error);
                 });
         });
     });
@@ -280,7 +341,7 @@ describe('programming-interface', () => {
         it('should return a rejected promise', () => {
             return zcbc.provideEther(dummyAddress, dummyAmount)
                 .catch(res => {
-                    return res.should.be.rejected;
+                    return res.should.be.instanceOf(Error);
                 });
         });
     });

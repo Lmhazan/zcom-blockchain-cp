@@ -1,6 +1,6 @@
 {
   "name": "zcom-blockchain-cp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Library to interact with Z.com Cloud BlockChain Control Panel",
   "main": "index.js",
   "scripts": {

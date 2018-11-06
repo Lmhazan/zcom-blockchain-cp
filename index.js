@@ -20,7 +20,7 @@ nj.configure({ autoescape: true });
 // Read token from default secret file if there is no env variable defined
 if (!authToken) {
     try {
-        authToken = readFileSync(defaultSecretFile, 'utf8');
+        authToken = readFileSync(defaultSecretFile, 'utf8').trim();
     } catch (err) {
         console.warn('There is no default config file set in project root folder!');
     }
@@ -43,7 +43,7 @@ module.exports = {
      * @param {string} secretFile The location of custom secret file
      */
     setSecretFile(secretFile) {
-        authToken = readFileSync(secretFile, 'utf8');
+        authToken = readFileSync(secretFile, 'utf8').trim();
     },
     /**
      * Set custom path to save output cns and contract file

@@ -13,6 +13,7 @@ let cnsFilePath = path.join(outputDir, 'zcom-cns.js');
 let authToken = process.env.ZCOM_AUTH_TOKEN;
 const apiRoot = process.env.ZCOM_API_URL || 'https://cp.blockchain.z.com/api/v1';
 const apiClient = new ZcomApiClient(apiRoot);
+const newLinePattern = /\r?\n|\r/;
 
 // Nunjuck settings
 nj.configure({ autoescape: true });
@@ -20,7 +21,9 @@ nj.configure({ autoescape: true });
 // Read token from default secret file if there is no env variable defined
 if (!authToken) {
     try {
-        authToken = readFileSync(defaultSecretFile, 'utf8').trim();
+        authToken = readFileSync(defaultSecretFile, 'utf8');
+        const firstLine = authToken.split(newLinePattern, 1)[0].replace(newLinePattern, '');
+        if(firstLine) authToken = firstLine;
     } catch (err) {
         console.warn('There is no default config file set in project root folder!');
     }
@@ -43,7 +46,9 @@ module.exports = {
      * @param {string} secretFile The location of custom secret file
      */
     setSecretFile(secretFile) {
-        authToken = readFileSync(secretFile, 'utf8').trim();
+        authToken = readFileSync(secretFile, 'utf8');
+        const firstLine = authToken.split(newLinePattern, 1)[0].replace(newLinePattern, '');
+        if(firstLine) authToken = firstLine;
     },
     /**
      * Set custom path to save output cns and contract file

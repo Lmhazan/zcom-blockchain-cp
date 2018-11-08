@@ -13,7 +13,7 @@ let cnsFilePath = path.join(outputDir, 'zcom-cns.js');
 let authToken = process.env.ZCOM_AUTH_TOKEN;
 const apiRoot = process.env.ZCOM_API_URL || 'https://cp.blockchain.z.com/api/v1';
 const apiClient = new ZcomApiClient(apiRoot);
-const lastNewLinePattern = /\r?\n|\r$/;
+const lastNewLinePattern = /\r?\n$|\r$/;
 
 // Nunjuck settings
 nj.configure({ autoescape: true });
